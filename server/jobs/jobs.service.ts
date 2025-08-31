@@ -12,6 +12,7 @@ type RunOptions = {
   autorotate?: boolean;
   embedToc?: boolean;
   ocrLang?: string;
+  embeddingModel?: string;
 };
 
 @Injectable()

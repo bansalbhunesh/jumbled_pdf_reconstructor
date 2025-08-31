@@ -24,7 +24,10 @@
     "enableAiAnalysis": true,
     "enableDuplicateDetection": true,
     "enableAutoRotation": true,
-    "enableTocGeneration": true
+    "enableTocGeneration": true,
+    "embeddingModel": "sentence-transformers/all-MiniLM-L6-v2",
+    "enableModelSelection": true,
+    "modelCacheDir": "./.cache/transformers"
   },
   "logging": {
     "level": "info",

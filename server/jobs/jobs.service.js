@@ -68,7 +68,10 @@ let JobsService = class JobsService {
         // 2) Embeddings (optional)
         let embeds;
         if (useEmb) {
-            embeds = await (0, embeddings_1.computePageEmbeddings)(pages);
+            // Get model from options or config
+            const modelName = options.embeddingModel || this.cfg.embeddingModel || 'sentence-transformers/all-MiniLM-L6-v2';
+            console.log(`🤖 Using embedding model: ${modelName}`);
+            embeds = await (0, embeddings_1.computePageEmbeddings)(pages, modelName);
         }
         job.progress = 45;
         this.jobs.set(id, job);

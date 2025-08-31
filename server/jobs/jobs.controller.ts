@@ -29,9 +29,10 @@ export class JobsController {
     @Query('autorotate') autorotate?: string,
     @Query('embedToc') embedToc?: string,
     @Query('ocrLang') ocrLang?: string,
+    @Query('embeddingModel') embeddingModel?: string,
   ) {
     console.log('📤 File upload received:', file?.originalname);
-    console.log('📋 Query parameters:', { emb, phash, autorotate, embedToc, ocrLang });
+    console.log('📋 Query parameters:', { emb, phash, autorotate, embedToc, ocrLang, embeddingModel });
     
     if (!file) throw new Error('No file uploaded (field name must be "file")');
     
@@ -43,6 +44,7 @@ export class JobsController {
         autorotate: autorotate === 'true',
         embedToc: embedToc === 'true',
         ocrLang: ocrLang || 'eng',
+        embeddingModel: embeddingModel,
       });
       console.log('✅ Job created successfully:', info);
       return info;
@@ -66,5 +68,20 @@ export class JobsController {
     const filePath = path.join(dir, name);
     if (!fs.existsSync(filePath)) throw new NotFoundException('file not found');
     res.download(filePath);
+  }
+
+  @Get('models/available')
+  getAvailableModels() {
+    const { getAvailableModels, getModelInfo } = require('../../src/analysis/embeddings');
+    const models = getAvailableModels();
+    const modelDetails = models.map((name: string) => ({
+      name,
+      ...getModelInfo(name)
+    }));
+    return {
+      models: modelDetails,
+      count: models.length,
+      default: 'sentence-transformers/all-MiniLM-L6-v2'
+    };
   }
 }

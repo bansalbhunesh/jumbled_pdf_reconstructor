@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { LoadingSpinner, Notification, FilePreview } from '../components';
 
@@ -17,10 +17,39 @@ export default function Home() {
     phash: true,
     autorotate: true,
     embedToc: true,
-    ocrLang: 'eng'
+    ocrLang: 'eng',
+    embeddingModel: 'sentence-transformers/all-MiniLM-L6-v2'
   });
+
+  // Available models state
+  const [availableModels, setAvailableModels] = useState<Array<{
+    name: string;
+    dimension: number;
+    maxLength: number;
+  }>>([]);
+  const [isLoadingModels, setIsLoadingModels] = useState(false);
   
   const router = useRouter();
+
+  // Fetch available models on component mount
+  useEffect(() => {
+    const fetchModels = async () => {
+      setIsLoadingModels(true);
+      try {
+        const response = await fetch('http://localhost:3001/jobs/models/available');
+        if (response.ok) {
+          const data = await response.json();
+          setAvailableModels(data.models);
+        }
+      } catch (error) {
+        console.error('Failed to fetch models:', error);
+      } finally {
+        setIsLoadingModels(false);
+      }
+    };
+
+    fetchModels();
+  }, []);
 
   const validateFile = (file: File): string | null => {
     if (file.type !== 'application/pdf') {
@@ -102,7 +131,8 @@ export default function Home() {
         phash: options.phash.toString(),
         autorotate: options.autorotate.toString(),
         embedToc: options.embedToc.toString(),
-        ocrLang: options.ocrLang
+        ocrLang: options.ocrLang,
+        embeddingModel: options.embeddingModel
       });
 
       const response = await fetch(`http://localhost:3001/jobs?${queryParams}`, {
@@ -315,6 +345,34 @@ export default function Home() {
                 <option value="ara">Arabic</option>
               </select>
             </div>
+
+            {options.emb && (
+              <div className="mt-6">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  AI Model for Page Ordering
+                </label>
+                <select 
+                  value={options.embeddingModel}
+                  onChange={(e) => handleOptionChange('embeddingModel', e.target.value)}
+                  className="w-full md:w-80 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                  disabled={isLoadingModels}
+                >
+                  {isLoadingModels ? (
+                    <option>Loading models...</option>
+                  ) : (
+                    availableModels.map((model) => (
+                      <option key={model.name} value={model.name}>
+                        {model.name} ({model.dimension}D, max {model.maxLength} chars)
+                      </option>
+                    ))
+                  )}
+                </select>
+                <p className="mt-2 text-xs text-gray-500">
+                  Choose the AI model for analyzing page content and determining logical order. 
+                  Higher dimensions generally provide better accuracy but use more memory.
+                </p>
+              </div>
+            )}
           </div>
         )}
 
