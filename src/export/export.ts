@@ -67,10 +67,14 @@ export async function exportReorderedPDFWithToc(
   const srcDoc = await PDFDocument.load(inputPdf);
   const outDoc = await PDFDocument.create();
 
-  let tocPresent = false;
+  // First, add all the reordered content pages
+  const copied = await outDoc.copyPages(srcDoc, order);
+  copied.forEach((p) => outDoc.addPage(p));
+
+  // Now add the TOC page at the beginning (this will shift all content pages by 1)
   if (tocItems && tocItems.length) {
-    tocPresent = true;
-    const toc = outDoc.addPage([595, 842]); // A4
+    // Insert TOC page at the beginning
+    const toc = outDoc.insertPage(0, [595, 842]); // A4, insert at index 0
     const font = await outDoc.embedFont(StandardFonts.Helvetica);
     const { width, height } = toc.getSize();
 
@@ -80,23 +84,22 @@ export async function exportReorderedPDFWithToc(
 
     let y = height - 100;
     tocItems.forEach((item, idx) => {
-      toc.drawText(`${item.title} .......... ${item.page}`, {
+      toc.drawText(`${item.title} .......... ${item.page + 1}`, {
         x: 60, y: y, size: 14, font, color: rgb(0, 0, 0),
       });
       // Add clickable link annotation for each entry
+      // Since TOC is now at index 0, content pages start at index 1
+      // item.page is 0-based from the original order, so we add 1 to get the correct page number
+      const actualDestPageIndex = item.page + 1;
       addLinkAnnotationToPage({
         doc: outDoc,
         sourcePageIndex: 0, // ToC page is always first
         rect: { x: 60, y: y, w: 400, h: 18 },
-        destPageIndex: item.page, // 1-based index
+        destPageIndex: actualDestPageIndex,
       });
       y -= 22;
     });
   }
-  
-  // append reordered pages
-  const copied = await outDoc.copyPages(srcDoc, order);
-  copied.forEach((p) => outDoc.addPage(p));
 
   const bytes = await outDoc.save();
   fs.mkdirSync(path.dirname(outPath), { recursive: true });

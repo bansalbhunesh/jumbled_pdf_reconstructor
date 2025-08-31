@@ -9,7 +9,7 @@
     "test": "jest",
     "api:dev": "ts-node --project server/tsconfig.json server/main.ts",
     "api:build": "tsc -p server/tsconfig.json",
-    "api:start": "node dist-server/main.js",
+    "api:start": "node dist-server/server/main.js",
     "web:dev": "npm --prefix web run dev",
     "web:build": "npm --prefix web run build",
     "web:start": "npm --prefix web run start",

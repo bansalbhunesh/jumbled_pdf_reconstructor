@@ -72,16 +72,25 @@ export class JobsController {
 
   @Get('models/available')
   getAvailableModels() {
-    const { getAvailableModels, getModelInfo } = require('../../src/analysis/embeddings');
-    const models = getAvailableModels();
-    const modelDetails = models.map((name: string) => ({
-      name,
-      ...getModelInfo(name)
-    }));
-    return {
-      models: modelDetails,
-      count: models.length,
-      default: 'sentence-transformers/all-MiniLM-L6-v2'
-    };
+    try {
+      const { getAvailableModels, getModelInfo } = require('../../src/analysis/embeddings');
+      const models = getAvailableModels();
+      const modelDetails = models.map((name: string) => ({
+        name,
+        ...getModelInfo(name)
+      }));
+      return {
+        models: modelDetails,
+        count: models.length,
+        default: 'sentence-transformers/all-MiniLM-L6-v2'
+      };
+    } catch (error) {
+      console.error('Failed to load embeddings module:', error);
+      return {
+        models: [],
+        count: 0,
+        default: 'sentence-transformers/all-MiniLM-L6-v2'
+      };
+    }
   }
 }

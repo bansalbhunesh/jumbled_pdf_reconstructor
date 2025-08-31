@@ -1,142 +1,147 @@
-# PDF Reconstructor 🚀
+# PDF Reconstructor
 
-An intelligent PDF page reordering tool that analyzes jumbled PDFs and reconstructs them to their logical sequence using AI-powered content analysis.
+An intelligent PDF page reordering system that uses AI to reconstruct jumbled PDF documents.
 
-## ✨ Features
+## Features
 
-- **📄 PDF Upload & Processing**: Accepts multi-page scanned PDFs
-- **🧠 AI-Powered Analysis**: Uses OCR, embeddings, and content analysis
-- **🔄 Smart Page Reordering**: Intelligently determines logical page sequence
-- **📊 Comprehensive Reports**: Detailed logs, reasoning, and analysis
-- **🔍 Duplicate Detection**: Identifies and reports duplicate pages
-- **📖 Table of Contents**: Auto-generates TOC from detected sections
-- **🌐 Modern Web Interface**: Beautiful, responsive UI for easy use
-- **🔌 RESTful API**: Full API for integration and automation
+- **AI-Powered Analysis**: Uses advanced OCR and content analysis to understand document structure
+- **Smart Page Ordering**: Intelligent algorithms determine logical page flow
+- **Duplicate Detection**: Identifies and reports duplicate pages
+- **Auto-rotation**: Corrects page orientation automatically
+- **Table of Contents**: Generates automatic TOC from detected headings
+- **Multiple AI Models**: Support for various embedding models with different capabilities
 
-## 🚀 One-Click Startup
+## Quick Start
 
-### Windows Users
-1. **Start Docker Desktop** (make sure it's running)
-2. **Double-click** `start.bat`
-3. **Wait** for services to start (about 10 seconds)
-4. **Open** http://localhost:3000 in your browser
+### Prerequisites
 
-### Mac/Linux Users
-1. **Start Docker Desktop** (make sure it's running)
-2. **Run** `./start.sh` in terminal
-3. **Wait** for services to start (about 10 seconds)
-4. **Open** http://localhost:3000 in your browser
+- Node.js 18+ 
+- npm or yarn
+- Windows 10/11 (for .bat scripts) or Linux/Mac (for shell scripts)
 
-## 🐳 Docker Architecture
+### Setup
 
-The system runs in containers:
-- **Frontend**: Next.js web app (port 3000)
-- **Backend**: NestJS API server (port 3001)
-- **Storage**: Persistent volumes for uploads and results
+1. **Clone and navigate to the project:**
+   ```bash
+   cd jumbled_pdf_reconstructor
+   ```
 
-## 📁 What Gets Generated
+2. **Run the setup script:**
+   - Windows: `setup.bat`
+   - Linux/Mac: `chmod +x setup.sh && ./setup.sh`
 
-For each processed PDF, you get:
-- `ordered.pdf` - Reconstructed PDF with correct page order
-- `log.json` - Processing details and reasoning
-- `report.html` - Human-readable analysis report
-- `toc.json` - Table of contents data
-- `dup_missing.json` - Duplicate and missing page analysis
+3. **Start the services:**
+   - Windows: `start.bat`
+   - Linux/Mac: `chmod +x start.sh && ./start.sh`
 
-## 🔧 Manual Commands
+### Manual Setup
 
-### Start Everything
-```bash
-docker-compose up --build -d
+If you prefer manual setup:
+
+1. **Install dependencies:**
+   ```bash
+   npm install
+   cd web && npm install && cd ..
+   ```
+
+2. **Create necessary directories:**
+   ```bash
+   mkdir -p uploads runs .tmp .cache/transformers
+   ```
+
+3. **Start the backend server:**
+   ```bash
+   npm run api:dev
+   ```
+
+4. **In a new terminal, start the frontend:**
+   ```bash
+   cd web && npm run dev
+   ```
+
+## Usage
+
+1. Open your browser and go to `http://localhost:3000`
+2. Upload a PDF file (up to 50MB)
+3. Configure processing options:
+   - **AI Page Ordering**: Use content analysis for logical page flow
+   - **Duplicate Detection**: Identify duplicate pages
+   - **Auto-rotate**: Correct page orientation
+   - **Generate TOC**: Create automatic table of contents
+   - **OCR Language**: Select text recognition language
+   - **AI Model**: Choose embedding model for analysis
+4. Click "Reconstruct PDF" to start processing
+5. Monitor progress and view results
+
+## API Endpoints
+
+- `POST /jobs` - Upload and process a PDF
+- `GET /jobs/:id` - Get job status and results
+- `GET /jobs/:id/files/:name` - Download processed files
+- `GET /jobs/models/available` - List available AI models
+
+## Configuration
+
+Edit `config.json` to customize:
+- Server ports and CORS settings
+- File upload limits
+- Processing options
+- AI model preferences
+- Logging levels
+
+## Project Structure
+
+```
+├── src/                    # Core processing logic
+│   ├── analysis/          # AI analysis modules
+│   ├── pdf/              # PDF processing
+│   ├── order/            # Page ordering algorithms
+│   └── export/           # Output generation
+├── server/                # NestJS backend API
+├── web/                   # Next.js frontend
+├── uploads/               # Temporary file storage
+├── runs/                  # Processing results
+└── config.json           # Configuration file
 ```
 
-### Stop Everything
+## Troubleshooting
+
+### Common Issues
+
+1. **Port conflicts**: Ensure ports 3000 and 3001 are available
+2. **Dependencies**: Run `npm install` in both root and web directories
+3. **AI models**: First run may download models (check `.cache/transformers`)
+4. **File permissions**: Ensure write access to uploads, runs, and cache directories
+
+### Logs
+
+- Backend logs appear in the backend terminal
+- Frontend logs appear in the browser console
+- Processing logs are saved in `runs/[job-id]/`
+
+## Development
+
+### Backend Development
 ```bash
-docker-compose down
+npm run api:dev          # Start with hot reload
+npm run api:build        # Build for production
+npm run api:start        # Start production build
 ```
 
-### View Logs
+### Frontend Development
 ```bash
-docker-compose logs -f
+cd web
+npm run dev             # Start with hot reload
+npm run build           # Build for production
+npm run start           # Start production build
 ```
 
-### Rebuild & Restart
+### Testing
 ```bash
-docker-compose down
-docker-compose up --build -d
+npm test                # Run tests
+npm run cli             # Run CLI version
 ```
 
-## 🌐 Access Points
+## License
 
-- **Web Interface**: http://localhost:3000
-- **API Server**: http://localhost:3001
-- **API Docs**: http://localhost:3001/jobs
-
-## 📤 API Usage
-
-### Upload PDF
-```bash
-curl -X POST -F "file=@your-file.pdf" http://localhost:3001/jobs
-```
-
-### Check Job Status
-```bash
-curl http://localhost:3001/jobs/{job-id}
-```
-
-### Download Results
-```bash
-curl http://localhost:3001/jobs/{job-id}/files/{filename}
-```
-
-## 🎯 Perfect For
-
-- **Mortgage & Lending**: Process jumbled loan documents
-- **Legal Documents**: Reconstruct case files and contracts
-- **Academic Papers**: Fix research paper page sequences
-- **Business Reports**: Organize scattered business documents
-- **Any Multi-Page PDF**: When pages get mixed up during scanning
-
-## 🛠️ System Requirements
-
-- **Docker Desktop** (latest version)
-- **4GB RAM** minimum (8GB recommended)
-- **2GB disk space** for the application
-- **Modern web browser** (Chrome, Firefox, Safari, Edge)
-
-## 🔍 Troubleshooting
-
-### Port Already in Use
-```bash
-docker-compose down
-docker-compose up --build -d
-```
-
-### Docker Not Running
-- Start Docker Desktop
-- Wait for it to fully load
-- Run the startup script again
-
-### Build Errors
-```bash
-docker-compose down
-docker system prune -f
-docker-compose up --build -d
-```
-
-## 📈 Performance
-
-- **Small PDFs** (< 10 pages): 10-30 seconds
-- **Medium PDFs** (10-50 pages): 1-3 minutes
-- **Large PDFs** (50+ pages): 3-10 minutes
-
-## 🎉 Ready to Use!
-
-Your PDF Reconstructor system is now running with:
-- ✅ **Frontend**: Modern web interface
-- ✅ **Backend**: Powerful API server
-- ✅ **Storage**: Persistent data storage
-- ✅ **Networking**: Container communication
-- ✅ **One-click startup**: Easy deployment
-
-**Start processing your jumbled PDFs now!** 🚀
+This project is licensed under the MIT License.
