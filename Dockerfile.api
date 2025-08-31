@@ -1,0 +1,28 @@
+FROM node:20-alpine
+
+# Install system dependencies
+RUN apk add --no-cache \
+    poppler-utils \
+    tesseract-ocr
+
+WORKDIR /app
+
+# Install all dependencies (including dev dependencies for building)
+COPY package*.json ./
+RUN npm ci
+
+# Copy source code
+COPY tsconfig.json ./
+COPY src ./src
+COPY server ./server
+COPY config.json ./
+
+# Build the application from the root directory
+RUN npm run build && cd server && npm run build
+
+# Remove dev dependencies for production
+RUN npm prune --production
+
+EXPOSE 3001
+ENV NODE_ENV=production
+CMD ["node", "dist-server/server/main.js"]

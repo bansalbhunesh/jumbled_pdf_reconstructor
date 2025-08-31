@@ -1,0 +1,42 @@
+version: "3.8"
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    ports:
+      - "3002:3001"
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+    volumes:
+      - ./.cache/transformers:/app/.cache/transformers
+      - ./uploads:/app/uploads
+      - ./runs:/app/runs
+      - ./config.json:/app/config.json
+    networks:
+      - pdf-reconstructor
+
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: "http://localhost:3002"
+    ports:
+      - "3003:3000"
+    depends_on:
+      - api
+    environment:
+      - NODE_ENV=production
+    networks:
+      - pdf-reconstructor
+
+networks:
+  pdf-reconstructor:
+    driver: bridge
+
+volumes:
+  uploads:
+  runs:
+  cache:
