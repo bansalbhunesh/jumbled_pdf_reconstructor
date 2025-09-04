@@ -84,7 +84,9 @@ export async function exportReorderedPDFWithToc(
 
     let y = height - 100;
     tocItems.forEach((item, idx) => {
-      toc.drawText(`${item.title} .......... ${item.page + 1}`, {
+      // Replace problematic Unicode characters that can't be encoded in WinAnsi
+      const safeTitle = item.title.replace(/‑/g, '-').replace(/–/g, '-').replace(/—/g, '-');
+      toc.drawText(`${safeTitle} .......... ${item.page + 1}`, {
         x: 60, y: y, size: 14, font, color: rgb(0, 0, 0),
       });
       // Add clickable link annotation for each entry
