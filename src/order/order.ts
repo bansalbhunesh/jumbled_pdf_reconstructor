@@ -464,17 +464,23 @@ function extractPageNumber(content: string): number | null {
   const bottomLines = lines.slice(-3); // Check last 3 lines for page numbers
   const middleLines = lines.slice(Math.floor(lines.length * 0.4), Math.floor(lines.length * 0.6)); // Check middle section
   
-  // Priority patterns for bottom/middle page numbers
+  // Enhanced patterns for page number detection
   const bottomMiddlePatterns = [
-    // Explicit page indicators in bottom/middle
-    /\bpage\s+(\d+)/i,
-    /\bp\.\s*(\d+)/i,
-    /page\s*(\d+)/i,
-    /\bp\s*(\d+)/i,
+    // Most common patterns first
+    /^page\s+(\d+)$/i,              // "Page 1", "Page 2"
+    /^page\s*(\d+)$/i,              // "Page1", "Page2"
+    /\bpage\s+(\d+)\b/i,            // "Page 1" anywhere in line
+    /\bpage\s*(\d+)\b/i,            // "Page1" anywhere in line
+    
+    // P. patterns
+    /^p\.\s*(\d+)$/i,               // "P. 1", "P. 2"
+    /^p\s*(\d+)$/i,                 // "P 1", "P 2"
+    /\bp\.\s*(\d+)\b/i,             // "P. 1" anywhere in line
+    /\bp\s*(\d+)\b/i,               // "P 1" anywhere in line
     
     // Standalone numbers (common in footers)
-    /^(\d+)$/,
-    /^(\d{1,3})$/,
+    /^(\d+)$/,                      // Just "1", "2", "3"
+    /^(\d{1,3})$/,                  // 1-3 digit numbers
     
     // Numbers with separators (common in footers)
     /-+\s*(\d+)\s*-+/i,            // --- 1 ---
@@ -483,22 +489,27 @@ function extractPageNumber(content: string): number | null {
     /_+\s*(\d+)\s*_+/i,            // ___ 1 ___
     
     // Page X of Y patterns
-    /page\s+(\d+)\s+of\s+\d+/i,
-    /p\.\s*(\d+)\s*of\s*\d+/i,
+    /page\s+(\d+)\s+of\s+\d+/i,    // "Page 1 of 5"
+    /p\.\s*(\d+)\s*of\s*\d+/i,     // "P. 1 of 5"
     
     // Roman numerals
-    /\bpage\s+([ivxlcdm]+)/i,
-    /\bp\.\s*([ivxlcdm]+)/i,
+    /\bpage\s+([ivxlcdm]+)/i,       // "Page I", "Page II"
+    /\bp\.\s*([ivxlcdm]+)/i,        // "P. I", "P. II"
   ];
   
   // Check bottom lines first (highest priority for page numbers)
+  console.log(`📄 Analyzing page content for page numbers. Total lines: ${lines.length}`);
+  console.log(`📄 Bottom lines to check:`, bottomLines);
+  
   for (const line of bottomLines) {
-    for (const pattern of bottomMiddlePatterns) {
+    console.log(`📄 Checking bottom line: "${line}"`);
+    for (let i = 0; i < bottomMiddlePatterns.length; i++) {
+      const pattern = bottomMiddlePatterns[i];
       const match = line.match(pattern);
       if (match) {
         const num = parseInt(match[1], 10);
         if (num > 0 && num < 10000) {
-          console.log(`📄 Found page number ${num} in bottom section: "${line}"`);
+          console.log(`📄 ✅ Found page number ${num} in bottom section with pattern ${i}: "${line}"`);
           return num;
         }
       }
@@ -506,20 +517,24 @@ function extractPageNumber(content: string): number | null {
   }
   
   // Check middle lines as secondary option
+  console.log(`📄 Middle lines to check:`, middleLines);
   for (const line of middleLines) {
-    for (const pattern of bottomMiddlePatterns) {
+    console.log(`📄 Checking middle line: "${line}"`);
+    for (let i = 0; i < bottomMiddlePatterns.length; i++) {
+      const pattern = bottomMiddlePatterns[i];
       const match = line.match(pattern);
       if (match) {
         const num = parseInt(match[1], 10);
         if (num > 0 && num < 10000) {
-          console.log(`📄 Found page number ${num} in middle section: "${line}"`);
+          console.log(`📄 ✅ Found page number ${num} in middle section with pattern ${i}: "${line}"`);
           return num;
         }
       }
     }
   }
   
-  // Fallback to original patterns for the entire content
+  // Fallback to search entire content
+  console.log(`📄 No page number found in bottom/middle, searching entire content...`);
   const fallbackPatterns = [
     /\bpage\s+(\d+)/i,
     /\bp\.\s*(\d+)/i,
@@ -544,7 +559,7 @@ function extractPageNumber(content: string): number | null {
       let num: number;
       
       // Handle Roman numerals
-      if (i >= 6 && i <= 7) { // Roman numeral patterns
+      if (i >= 10 && i <= 11) { // Roman numeral patterns
         num = romanToNumber(match[1].toLowerCase());
         if (num === 0) continue; // Invalid Roman numeral
       } else {
@@ -553,12 +568,13 @@ function extractPageNumber(content: string): number | null {
       
       // Reasonable page number range
       if (num > 0 && num < 10000) {
-        console.log(`📄 Found page number ${num} in fallback search: "${match[0]}"`);
+        console.log(`📄 ✅ Found page number ${num} in fallback search with pattern ${i}: "${match[0]}"`);
         return num;
       }
     }
   }
   
+  console.log(`📄 ❌ No page number detected in content`);
   return null;
 }
 
